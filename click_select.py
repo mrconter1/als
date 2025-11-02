@@ -31,6 +31,7 @@ def handle_space():
     
     split_horizontal[0] = not split_horizontal[0]
     toggle_state[0] = True
+    timer_start[0] = time.time()
     
     new_width = current_region[2] - current_region[0]
     new_height = current_region[3] - current_region[1]
@@ -52,6 +53,12 @@ root.attributes('-topmost', True)
 root.wm_attributes('-transparentcolor', 'white')
 root.overrideredirect(True)
 
+progress_canvas = tk.Canvas(root, height=8, bg='white', highlightthickness=0)
+progress_canvas.pack(fill=tk.X, side=tk.TOP)
+progress_bar = progress_canvas.create_rectangle(0, 0, 0, 8, fill="blue", outline="blue")
+
+timer_start = [time.time()]
+
 SPLIT_INTERVAL = 1000  # milliseconds
 MIN_BOX_SIZE = 50
 
@@ -67,6 +74,19 @@ toggle_state = [True]
 split_horizontal = [True]
 split_timer = [None]
 rect_id = None
+
+def update_progress_bar():
+    try:
+        if root.winfo_exists():
+            elapsed = (time.time() - timer_start[0]) * 1000
+            progress = min(max(elapsed / SPLIT_INTERVAL, 0), 1.0)
+            canvas_width = progress_canvas.winfo_width()
+            if canvas_width > 1:
+                fill_width = max(0, min(canvas_width * progress, canvas_width))
+                progress_canvas.coords(progress_bar, 0, 0, fill_width, 8)
+            root.after(10, update_progress_bar)
+    except:
+        root.after(10, update_progress_bar)
 
 def draw_regions():
     global rect_id
@@ -103,6 +123,7 @@ def update_timer():
     
     def toggle_highlight():
         toggle_state[0] = not toggle_state[0]
+        timer_start[0] = time.time()
         draw_regions()
         split_timer[0] = root.after(SPLIT_INTERVAL, toggle_highlight)
     
@@ -115,6 +136,7 @@ def reset_region():
     current_region[3] = screen_height
     toggle_state[0] = True
     split_horizontal[0] = True
+    timer_start[0] = time.time()
     draw_regions()
 
 root.focus_force()
@@ -129,6 +151,9 @@ def on_escape_pressed(event):
 
 keyboard.on_press_key('space', on_space_pressed, suppress=True)
 keyboard.on_press_key('esc', on_escape_pressed, suppress=True)
+
+timer_start[0] = time.time()
+update_progress_bar()
 
 draw_regions()
 root.mainloop()
