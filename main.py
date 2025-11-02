@@ -51,8 +51,8 @@ def optimize_keyboard_layout():
     return layout
 
 def update_progress_bar():
-    if highlight_timer[0] is not None:
-        elapsed = (time.time() - timer_start[0]) * 1000
+    if state['highlight_timer'] is not None:
+        elapsed = (time.time() - state['timer_start']) * 1000
         progress = min(elapsed / HIGHLIGHT_INTERVAL, 1.0)
         canvas_width = progress_canvas.winfo_width()
         if canvas_width > 1:
@@ -61,7 +61,6 @@ def update_progress_bar():
     root.after(10, update_progress_bar)
 
 import time
-timer_start = [time.time()]
 
 keyboard_layout = optimize_keyboard_layout()
 
@@ -71,7 +70,6 @@ keyboard_frame.pack(pady=10)
 key_font = font.Font(family="Helvetica", size=12, weight="bold")
 key_labels = []
 flat_keys = []
-capitalize_next = [True]
 
 def should_capitalize_after_space():
     current_text = text_entry.get(1.0, tk.END).rstrip('\n')
@@ -96,7 +94,7 @@ def handle_backspace():
     prev_pos = text_entry.index(cursor_pos + "-1c")
     if cursor_pos != prev_pos:
         text_entry.delete(prev_pos, cursor_pos)
-    capitalize_next[0] = False
+    state['capitalize_next'] = False
 
 def handle_character_action(char):
     """Handle insertion or action for any character or special key"""
@@ -106,13 +104,13 @@ def handle_character_action(char):
         speak_text()
     elif char == 'ENTER':
         text_entry.insert(tk.END, '\n')
-        capitalize_next[0] = True
+        state['capitalize_next'] = True
     elif char == 'CAPS':
         pass
     elif char == 'SPACE':
         text_entry.insert(tk.END, ' ')
         if should_capitalize_after_space():
-            capitalize_next[0] = True
+            state['capitalize_next'] = True
     elif char == '←':
         text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
     elif char == '→':
@@ -130,10 +128,10 @@ def handle_character_action(char):
                 text_entry.insert(tk.END, 'I')
             else:
                 text_entry.insert(tk.END, 'i')
-            capitalize_next[0] = False
-        elif char.isalpha() and capitalize_next[0]:
+            state['capitalize_next'] = False
+        elif char.isalpha() and state['capitalize_next']:
             text_entry.insert(tk.END, char.upper())
-            capitalize_next[0] = False
+            state['capitalize_next'] = False
         elif char.isalpha():
             text_entry.insert(tk.END, char.lower())
         else:
@@ -145,8 +143,8 @@ def create_click_handler(char):
     return on_click
 
 def update_highlight():
-    show_first_half = toggle_state[0]
-    start_idx, end_idx = current_range[0]
+    show_first_half = state['toggle_state']
+    start_idx, end_idx = state['current_range']
     mid_idx = (start_idx + end_idx) // 2
     
     for i in range(len(key_labels)):
@@ -165,43 +163,43 @@ def update_highlight():
             for i in range(mid_idx, end_idx):
                 key_labels[i].config(bg="blue", fg="white")
         
-        toggle_state[0] = not toggle_state[0]
-        highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
-        timer_start[0] = time.time()
+        state['toggle_state'] = not state['toggle_state']
+        state['highlight_timer'] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
+        state['timer_start'] = time.time()
 
 def on_space_key(event):
-    start_idx, end_idx = current_range[0]
+    start_idx, end_idx = state['current_range']
     
     if start_idx == end_idx - 1:
         char = flat_keys[start_idx]
         handle_character_action(char)
-        current_range[0] = [0, len(key_labels)]
-        toggle_state[0] = True
-        root.after_cancel(highlight_timer[0])
+        state['current_range'] = [0, len(key_labels)]
+        state['toggle_state'] = True
+        root.after_cancel(state['highlight_timer'])
         update_highlight()
-        timer_start[0] = time.time()
+        state['timer_start'] = time.time()
     else:
         mid_idx = (start_idx + end_idx) // 2
-        if toggle_state[0]:
-            current_range[0] = [mid_idx, end_idx]
+        if state['toggle_state']:
+            state['current_range'] = [mid_idx, end_idx]
         else:
-            current_range[0] = [start_idx, mid_idx]
-        toggle_state[0] = True
-        root.after_cancel(highlight_timer[0])
+            state['current_range'] = [start_idx, mid_idx]
+        state['toggle_state'] = True
+        root.after_cancel(state['highlight_timer'])
         for i in range(len(key_labels)):
             key_labels[i].config(bg="SystemButtonFace", fg="black")
         
-        new_start, new_end = current_range[0]
+        new_start, new_end = state['current_range']
         if new_start == new_end - 1:
             char = flat_keys[new_start]
             handle_character_action(char)
-            current_range[0] = [0, len(key_labels)]
-            toggle_state[0] = True
+            state['current_range'] = [0, len(key_labels)]
+            state['toggle_state'] = True
             update_highlight()
-            timer_start[0] = time.time()
+            state['timer_start'] = time.time()
         else:
             update_highlight()
-            timer_start[0] = time.time()
+            state['timer_start'] = time.time()
     return "break"
 
 for row_idx, row in enumerate(keyboard_layout):
@@ -221,22 +219,27 @@ for row_idx, row in enumerate(keyboard_layout):
         key_labels.append(key_label)
         flat_keys.append(key)
 
-current_range = [[0, len(key_labels)]]
-toggle_state = [True]
+state = {
+    'current_range': [0, len(key_labels)],
+    'toggle_state': True,
+    'highlight_timer': None,
+    'timer_start': time.time()
+}
 
 text_entry = tk.Text(root, font=font.Font(family="Helvetica", size=12), width=50, height=5, insertwidth=2, insertbackground="blue")
 text_entry.pack(pady=15, padx=5)
 
-cursor_visible = [True]
-cursor_blink_timer = [None]
+state['cursor_visible'] = True
+state['cursor_blink_timer'] = None
+state['capitalize_next'] = True
 
 def toggle_cursor_blink():
-    if cursor_visible[0]:
+    if state['cursor_visible']:
         text_entry.config(insertwidth=2)
     else:
         text_entry.config(insertwidth=0)
-    cursor_visible[0] = not cursor_visible[0]
-    cursor_blink_timer[0] = root.after(500, toggle_cursor_blink)
+    state['cursor_visible'] = not state['cursor_visible']
+    state['cursor_blink_timer'] = root.after(500, toggle_cursor_blink)
 
 def on_arrow_left(event):
     text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
@@ -268,9 +271,7 @@ root.bind(".", on_space_key)
 root.update_idletasks()
 root.geometry(f"{root.winfo_reqwidth()}x{root.winfo_reqheight()}")
 
-highlight_timer = [None]
-highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
-timer_start[0] = time.time()
+state['highlight_timer'] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
 update_progress_bar()
 
 root.mainloop()
