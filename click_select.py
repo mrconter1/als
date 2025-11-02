@@ -183,20 +183,20 @@ def draw_regions():
         mid_x = x1 + width // 2
         
         if toggle_state[0]:
-            canvas.create_rectangle(x1, y1, mid_x, y2, outline="blue", width=3)
-            canvas.create_rectangle(mid_x, y1, x2, y2, outline="gray", width=2)
+            canvas.create_rectangle(x1, y1, mid_x, y2, fill="#F0F8FF", outline="blue", width=8, stipple="gray12")
+            canvas.create_rectangle(mid_x, y1, x2, y2, outline="lightgray", width=2)
         else:
-            canvas.create_rectangle(x1, y1, mid_x, y2, outline="gray", width=2)
-            canvas.create_rectangle(mid_x, y1, x2, y2, outline="blue", width=3)
+            canvas.create_rectangle(x1, y1, mid_x, y2, outline="lightgray", width=2)
+            canvas.create_rectangle(mid_x, y1, x2, y2, fill="#F0F8FF", outline="blue", width=8, stipple="gray12")
     else:
         mid_y = y1 + height // 2
         
         if toggle_state[0]:
-            canvas.create_rectangle(x1, y1, x2, mid_y, outline="blue", width=3)
-            canvas.create_rectangle(x1, mid_y, x2, y2, outline="gray", width=2)
+            canvas.create_rectangle(x1, y1, x2, mid_y, fill="#F0F8FF", outline="blue", width=8, stipple="gray12")
+            canvas.create_rectangle(x1, mid_y, x2, y2, outline="lightgray", width=2)
         else:
-            canvas.create_rectangle(x1, y1, x2, mid_y, outline="gray", width=2)
-            canvas.create_rectangle(x1, mid_y, x2, y2, outline="blue", width=3)
+            canvas.create_rectangle(x1, y1, x2, mid_y, outline="lightgray", width=2)
+            canvas.create_rectangle(x1, mid_y, x2, y2, fill="#F0F8FF", outline="blue", width=8, stipple="gray12")
     
     update_timer()
 
