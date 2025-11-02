@@ -34,7 +34,7 @@ keyboard_layout = [
     [("'", 1), (')', 1), (':', 1), ('J', 1), ('Z', 1), ('=', 1), ('>', 1), ('(', 1), ('!', 1), ('/', 1)],
     [('å', 1)],
     [('SPACE', 7)],
-    [('←', 1), ('↑', 1), ('↓', 1), ('→', 1)]
+    [('←', 1), ('↑', 1), ('↓', 1), ('→', 1), ('CLR', 2)]
 ]
 
 keyboard_frame = tk.Frame(root)
@@ -80,6 +80,8 @@ def create_click_handler(char):
             text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
         elif char == '↓':
             text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
+        elif char == 'CLR':
+            text_entry.delete(1.0, tk.END)
         else:
             if char.lower() == 'i':
                 current_text = text_entry.get(1.0, tk.END).rstrip('\n')
@@ -146,6 +148,8 @@ def on_space_key(event):
             text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
         elif char == '↓':
             text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
+        elif char == 'CLR':
+            text_entry.delete(1.0, tk.END)
         else:
             if char.lower() == 'i':
                 current_text = text_entry.get(1.0, tk.END).rstrip('\n')
@@ -199,6 +203,8 @@ def on_space_key(event):
                 text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
             elif char == '↓':
                 text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
+            elif char == 'CLR':
+                text_entry.delete(1.0, tk.END)
             else:
                 if char.lower() == 'i':
                     current_text = text_entry.get(1.0, tk.END).rstrip('\n')
