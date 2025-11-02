@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import font
+import pyttsx3
 
 root = tk.Tk()
 root.title("Keyboard")
@@ -41,7 +42,7 @@ def optimize_keyboard_layout():
         tier2,
         tier3,
         tier4,
-        [('BACK', 1.5), ('ENTER', 1.5), ('CLR', 2)],
+        [('BACK', 1.5), ('SAY', 1.5), ('ENTER', 1.5), ('CLR', 2)],
         [('SPACE', 7)],
         [('←', 1), ('↑', 1), ('↓', 1), ('→', 1)]
     ]
@@ -78,6 +79,15 @@ def should_capitalize_after_space():
         return last_char in '.!?'
     return False
 
+engine = pyttsx3.init()
+engine.setProperty('rate', 150)
+
+def speak_text():
+    text_content = text_entry.get(1.0, tk.END).rstrip('\n')
+    if text_content:
+        engine.say(text_content)
+        engine.runAndWait()
+
 def handle_backspace():
     cursor_pos = text_entry.index(tk.INSERT)
     prev_pos = text_entry.index(cursor_pos + "-1c")
@@ -89,6 +99,8 @@ def create_click_handler(char):
     def on_click():
         if char == 'BACK':
             handle_backspace()
+        elif char == 'SAY':
+            speak_text()
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
             capitalize_next[0] = True
@@ -157,6 +169,8 @@ def on_space_key(event):
         char = flat_keys[start_idx]
         if char == 'BACK':
             handle_backspace()
+        elif char == 'SAY':
+            speak_text()
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
             capitalize_next[0] = True
@@ -212,6 +226,8 @@ def on_space_key(event):
             char = flat_keys[new_start]
             if char == 'BACK':
                 handle_backspace()
+            elif char == 'SAY':
+                speak_text()
             elif char == 'ENTER':
                 text_entry.insert(tk.END, '\n')
                 capitalize_next[0] = True
