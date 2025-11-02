@@ -16,15 +16,17 @@ def handle_space():
         
         try:
             if option == 'LEFT CLICK':
-                pyautogui.click(center_x, center_y)
+                pyautogui.click(center_x, center_y, button='left')
             elif option == 'RIGHT CLICK':
-                pyautogui.click(center_x, center_y, button='right')
+                pyautogui.mouseDown(center_x, center_y, button='right')
+                time.sleep(0.05)
+                pyautogui.mouseUp(button='right')
             elif option == 'CANCEL':
                 pass
         except Exception as e:
             print(f"Click error: {e}")
         
-        time.sleep(0.1)
+        time.sleep(0.2)
         reset_region()
     else:
         x1, y1, x2, y2 = current_region
@@ -223,6 +225,7 @@ def reset_region():
     current_region[3] = screen_height
     toggle_state[0] = True
     split_horizontal[0] = True
+    menu_active[0] = False
     timer_start[0] = time.time()
     draw_regions()
 
