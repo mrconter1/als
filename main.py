@@ -53,13 +53,17 @@ def should_capitalize_after_space():
         return last_char in '.!?'
     return False
 
+def handle_backspace():
+    cursor_pos = text_entry.index(tk.INSERT)
+    prev_pos = text_entry.index(cursor_pos + "-1c")
+    if cursor_pos != prev_pos:
+        text_entry.delete(prev_pos, cursor_pos)
+    capitalize_next[0] = False
+
 def create_click_handler(char):
     def on_click():
         if char == 'BACK':
-            current_text = text_entry.get(1.0, tk.END)
-            text_entry.delete(1.0, tk.END)
-            text_entry.insert(1.0, current_text[:-1])
-            capitalize_next[0] = False
+            handle_backspace()
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
             capitalize_next[0] = True
@@ -112,10 +116,7 @@ def on_space_key(event):
     if start_idx == end_idx - 1:
         char = flat_keys[start_idx]
         if char == 'BACK':
-            current_text = text_entry.get(1.0, tk.END)
-            text_entry.delete(1.0, tk.END)
-            text_entry.insert(1.0, current_text[:-1])
-            capitalize_next[0] = False
+            handle_backspace()
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
             capitalize_next[0] = True
@@ -153,10 +154,7 @@ def on_space_key(event):
         if new_start == new_end - 1:
             char = flat_keys[new_start]
             if char == 'BACK':
-                current_text = text_entry.get(1.0, tk.END)
-                text_entry.delete(1.0, tk.END)
-                text_entry.insert(1.0, current_text[:-1])
-                capitalize_next[0] = False
+                handle_backspace()
             elif char == 'ENTER':
                 text_entry.insert(tk.END, '\n')
                 capitalize_next[0] = True
@@ -181,6 +179,7 @@ def on_space_key(event):
         else:
             update_highlight()
             timer_start[0] = time.time()
+    return "break"
 
 for row_idx, row in enumerate(keyboard_layout):
     row_frame = tk.Frame(keyboard_frame)
@@ -202,8 +201,44 @@ for row_idx, row in enumerate(keyboard_layout):
 current_range = [[0, len(key_labels)]]
 toggle_state = [True]
 
-text_entry = tk.Text(root, font=font.Font(family="Helvetica", size=12), width=50, height=5)
+text_entry = tk.Text(root, font=font.Font(family="Helvetica", size=12), width=50, height=5, insertwidth=2, insertbackground="blue")
 text_entry.pack(pady=15, padx=5)
+
+cursor_visible = [True]
+cursor_blink_timer = [None]
+
+def toggle_cursor_blink():
+    if cursor_visible[0]:
+        text_entry.config(insertwidth=2)
+    else:
+        text_entry.config(insertwidth=0)
+    cursor_visible[0] = not cursor_visible[0]
+    cursor_blink_timer[0] = root.after(500, toggle_cursor_blink)
+
+def on_arrow_left(event):
+    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
+    return "break"
+
+def on_arrow_right(event):
+    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
+    return "break"
+
+def on_arrow_up(event):
+    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
+    return "break"
+
+def on_arrow_down(event):
+    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
+    return "break"
+
+text_entry.bind("<Left>", on_arrow_left)
+text_entry.bind("<Right>", on_arrow_right)
+text_entry.bind("<Up>", on_arrow_up)
+text_entry.bind("<Down>", on_arrow_down)
+text_entry.bind("<space>", on_space_key)
+
+text_entry.focus()
+toggle_cursor_blink()
 
 root.bind("<space>", on_space_key)
 
