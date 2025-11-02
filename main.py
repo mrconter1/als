@@ -166,6 +166,29 @@ def reset_selection_state():
     update_highlight()
     state['timer_start'] = time.time()
 
+def show_key_pressed_feedback(key_idx):
+    """Highlight the pressed key in green and reset selection after brief delay"""
+    key_labels[key_idx].config(bg="green", fg="white")
+    def reset_after_feedback():
+        reset_selection_state()
+    root.after(100, reset_after_feedback)
+
+def show_range_selected_feedback(start_idx, end_idx):
+    """Highlight the selected range in green and continue selection after brief delay"""
+    for i in range(start_idx, end_idx):
+        key_labels[i].config(bg="green", fg="white")
+    def continue_selection():
+        if start_idx == end_idx - 1:
+            char = flat_keys[start_idx]
+            handle_character_action(char)
+            show_key_pressed_feedback(start_idx)
+        else:
+            state['current_range'] = [start_idx, end_idx]
+            state['toggle_state'] = True
+            update_highlight()
+            state['timer_start'] = time.time()
+    root.after(100, continue_selection)
+
 def on_space_key(event):
     start_idx, end_idx = state['current_range']
     
@@ -173,26 +196,17 @@ def on_space_key(event):
         char = flat_keys[start_idx]
         handle_character_action(char)
         root.after_cancel(state['highlight_timer'])
-        reset_selection_state()
+        show_key_pressed_feedback(start_idx)
     else:
         mid_idx = (start_idx + end_idx) // 2
         if state['toggle_state']:
-            state['current_range'] = [mid_idx, end_idx]
+            selected_start, selected_end = mid_idx, end_idx
         else:
-            state['current_range'] = [start_idx, mid_idx]
-        state['toggle_state'] = True
+            selected_start, selected_end = start_idx, mid_idx
         root.after_cancel(state['highlight_timer'])
         for i in range(len(key_labels)):
             key_labels[i].config(bg="SystemButtonFace", fg="black")
-        
-        new_start, new_end = state['current_range']
-        if new_start == new_end - 1:
-            char = flat_keys[new_start]
-            handle_character_action(char)
-            reset_selection_state()
-        else:
-            update_highlight()
-            state['timer_start'] = time.time()
+        show_range_selected_feedback(selected_start, selected_end)
     return "break"
 
 for row_idx, row in enumerate(keyboard_layout):
