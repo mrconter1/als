@@ -8,42 +8,53 @@ import threading
 space_pressed = False
 
 def handle_space():
-    x1, y1, x2, y2 = current_region
-    width = x2 - x1
-    height = y2 - y1
-    
-    if split_horizontal[0]:
-        mid_x = x1 + width // 2
-        if toggle_state[0]:
-            current_region[0] = x1
-            current_region[2] = mid_x
+    if menu_active[0]:
+        start_idx, end_idx = menu_region
+        if start_idx == end_idx - 1:
+            handle_menu_selection()
+            menu_active[0] = False
         else:
-            current_region[0] = mid_x
-            current_region[2] = x2
+            mid_idx = (start_idx + end_idx) // 2
+            if toggle_state[0]:
+                menu_region[0] = mid_idx
+            else:
+                menu_region[1] = mid_idx
+            toggle_state[0] = True
+            timer_start[0] = time.time()
+            draw_menu()
     else:
-        mid_y = y1 + height // 2
-        if toggle_state[0]:
-            current_region[1] = y1
-            current_region[3] = mid_y
-        else:
-            current_region[1] = mid_y
-            current_region[3] = y2
-    
-    split_horizontal[0] = not split_horizontal[0]
-    toggle_state[0] = True
-    timer_start[0] = time.time()
-    
-    new_width = current_region[2] - current_region[0]
-    new_height = current_region[3] - current_region[1]
-    
-    if new_width <= MIN_BOX_SIZE or new_height <= MIN_BOX_SIZE:
         x1, y1, x2, y2 = current_region
-        center_x = (x1 + x2) // 2
-        center_y = (y1 + y2) // 2
-        pyautogui.click(center_x, center_y)
-        reset_region()
-    else:
-        draw_regions()
+        width = x2 - x1
+        height = y2 - y1
+        
+        if split_horizontal[0]:
+            mid_x = x1 + width // 2
+            if toggle_state[0]:
+                current_region[0] = x1
+                current_region[2] = mid_x
+            else:
+                current_region[0] = mid_x
+                current_region[2] = x2
+        else:
+            mid_y = y1 + height // 2
+            if toggle_state[0]:
+                current_region[1] = y1
+                current_region[3] = mid_y
+            else:
+                current_region[1] = mid_y
+                current_region[3] = y2
+        
+        split_horizontal[0] = not split_horizontal[0]
+        toggle_state[0] = True
+        timer_start[0] = time.time()
+        
+        new_width = current_region[2] - current_region[0]
+        new_height = current_region[3] - current_region[1]
+        
+        if new_width <= MIN_BOX_SIZE or new_height <= MIN_BOX_SIZE:
+            enter_menu()
+        else:
+            draw_regions()
 
 def handle_escape():
     root.destroy()
@@ -74,6 +85,74 @@ toggle_state = [True]
 split_horizontal = [True]
 split_timer = [None]
 rect_id = None
+menu_active = [False]
+menu_options = ['LEFT CLICK', 'RIGHT CLICK', 'CANCEL']
+menu_region = [0, len(menu_options)]
+
+def handle_menu_selection():
+    start_idx, end_idx = menu_region
+    selected_idx = start_idx
+    option = menu_options[selected_idx]
+    
+    x1, y1, x2, y2 = current_region
+    center_x = (x1 + x2) // 2
+    center_y = (y1 + y2) // 2
+    
+    if option == 'LEFT CLICK':
+        pyautogui.click(center_x, center_y, button='left')
+    elif option == 'RIGHT CLICK':
+        pyautogui.click(center_x, center_y, button='right')
+    elif option == 'CANCEL':
+        pass
+    
+    reset_region()
+
+def draw_menu():
+    canvas.delete("all")
+    
+    x1, y1, x2, y2 = current_region
+    width = x2 - x1
+    height = y2 - y1
+    center_x = x1 + width // 2
+    center_y = y1 + height // 2
+    
+    box_width = 80
+    box_height = 60
+    box_spacing = 20
+    
+    boxes = [
+        (center_x - box_width - box_spacing, center_y - box_height // 2, center_x - box_spacing, center_y + box_height // 2, "LEFT CLICK"),
+        (center_x + box_spacing, center_y - box_height // 2, center_x + box_width + box_spacing, center_y + box_height // 2, "RIGHT CLICK"),
+        (center_x - box_width // 2, center_y + box_spacing + box_height // 2, center_x + box_width // 2, center_y + box_spacing + box_height, "CANCEL")
+    ]
+    
+    start_idx, end_idx = menu_region
+    mid_idx = (start_idx + end_idx) // 2 if end_idx > start_idx + 1 else start_idx
+    
+    for i, (bx1, by1, bx2, by2, label) in enumerate(boxes):
+        if start_idx == end_idx - 1:
+            is_selected = (i == start_idx)
+        else:
+            is_selected = (i < mid_idx and toggle_state[0]) or (i >= mid_idx and not toggle_state[0])
+        
+        color = "blue" if is_selected else "gray"
+        width = 4 if is_selected else 2
+        canvas.create_rectangle(bx1, by1, bx2, by2, outline=color, width=width)
+        canvas.create_text((bx1 + bx2) // 2, (by1 + by2) // 2, text=label, font=("Arial", 12, "bold"), fill=color)
+    
+    canvas.create_line(center_x - 10, center_y, center_x + 10, center_y, fill="red", width=2)
+    canvas.create_line(center_x, center_y - 10, center_x, center_y + 10, fill="red", width=2)
+
+def enter_menu():
+    global menu_active
+    menu_active[0] = True
+    menu_region[0] = 0
+    menu_region[1] = len(menu_options)
+    toggle_state[0] = True
+    split_horizontal[0] = True
+    timer_start[0] = time.time()
+    draw_menu()
+    update_timer()
 
 def update_progress_bar():
     try:
@@ -124,7 +203,10 @@ def update_timer():
     def toggle_highlight():
         toggle_state[0] = not toggle_state[0]
         timer_start[0] = time.time()
-        draw_regions()
+        if menu_active[0]:
+            draw_menu()
+        else:
+            draw_regions()
         split_timer[0] = root.after(SPLIT_INTERVAL, toggle_highlight)
     
     split_timer[0] = root.after(SPLIT_INTERVAL, toggle_highlight)
