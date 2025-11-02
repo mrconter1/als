@@ -241,26 +241,16 @@ def toggle_cursor_blink():
     state['cursor_visible'] = not state['cursor_visible']
     state['cursor_blink_timer'] = root.after(500, toggle_cursor_blink)
 
-def on_arrow_left(event):
-    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
-    return "break"
+def create_arrow_handler(movement):
+    def on_arrow(event):
+        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + movement))
+        return "break"
+    return on_arrow
 
-def on_arrow_right(event):
-    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
-    return "break"
-
-def on_arrow_up(event):
-    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
-    return "break"
-
-def on_arrow_down(event):
-    text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
-    return "break"
-
-text_entry.bind("<Left>", on_arrow_left)
-text_entry.bind("<Right>", on_arrow_right)
-text_entry.bind("<Up>", on_arrow_up)
-text_entry.bind("<Down>", on_arrow_down)
+text_entry.bind("<Left>", create_arrow_handler("-1c"))
+text_entry.bind("<Right>", create_arrow_handler("+1c"))
+text_entry.bind("<Up>", create_arrow_handler("-1l linestart"))
+text_entry.bind("<Down>", create_arrow_handler("+1l linestart"))
 text_entry.bind(".", on_space_key)
 
 text_entry.focus()
