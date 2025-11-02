@@ -277,12 +277,12 @@ text_entry.bind("<Left>", on_arrow_left)
 text_entry.bind("<Right>", on_arrow_right)
 text_entry.bind("<Up>", on_arrow_up)
 text_entry.bind("<Down>", on_arrow_down)
-text_entry.bind("<space>", on_space_key)
+text_entry.bind(".", on_space_key)
 
 text_entry.focus()
 toggle_cursor_blink()
 
-root.bind("<space>", on_space_key)
+root.bind(".", on_space_key)
 
 root.update_idletasks()
 root.geometry(f"{root.winfo_reqwidth()}x{root.winfo_reqheight()}")
