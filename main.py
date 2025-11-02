@@ -10,6 +10,23 @@ title_font = font.Font(family="Helvetica", size=16, weight="bold")
 title_label = tk.Label(root, text="Keyboard", font=title_font)
 title_label.pack(pady=15)
 
+progress_canvas = tk.Canvas(root, height=8, bg="white", highlightthickness=0)
+progress_canvas.pack(fill=tk.X, padx=10, pady=5)
+progress_bar = progress_canvas.create_rectangle(0, 0, 0, 8, fill="blue", outline="blue")
+
+def update_progress_bar():
+    if highlight_timer[0] is not None:
+        elapsed = (time.time() - timer_start[0]) * 1000
+        progress = min(elapsed / HIGHLIGHT_INTERVAL, 1.0)
+        canvas_width = progress_canvas.winfo_width()
+        if canvas_width > 1:
+            fill_width = canvas_width * progress
+            progress_canvas.coords(progress_bar, 0, 0, fill_width, 8)
+    root.after(10, update_progress_bar)
+
+import time
+timer_start = [time.time()]
+
 keyboard_layout = [
     [('1', 1), ('2', 1), ('3', 1), ('4', 1), ('5', 1), ('6', 1), ('7', 1), ('8', 1), ('9', 1), ('0', 1), ('BACK', 1.5)],
     [('Q', 1), ('W', 1), ('E', 1), ('R', 1), ('T', 1), ('Y', 1), ('U', 1), ('I', 1), ('O', 1), ('P', 1)],
@@ -87,6 +104,7 @@ def update_highlight():
         
         toggle_state[0] = not toggle_state[0]
         highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
+        timer_start[0] = time.time()
 
 def on_space_key(event):
     start_idx, end_idx = current_range[0]
@@ -119,6 +137,7 @@ def on_space_key(event):
         toggle_state[0] = True
         root.after_cancel(highlight_timer[0])
         update_highlight()
+        timer_start[0] = time.time()
     else:
         mid_idx = (start_idx + end_idx) // 2
         if toggle_state[0]:
@@ -158,8 +177,10 @@ def on_space_key(event):
             current_range[0] = [0, len(key_labels)]
             toggle_state[0] = True
             update_highlight()
+            timer_start[0] = time.time()
         else:
             update_highlight()
+            timer_start[0] = time.time()
 
 for row_idx, row in enumerate(keyboard_layout):
     row_frame = tk.Frame(keyboard_frame)
@@ -191,5 +212,7 @@ root.geometry(f"{root.winfo_reqwidth()}x{root.winfo_reqheight()}")
 
 highlight_timer = [None]
 highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
+timer_start[0] = time.time()
+update_progress_bar()
 
 root.mainloop()
