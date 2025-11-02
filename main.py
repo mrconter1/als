@@ -72,19 +72,25 @@ def create_click_handler(char):
             text_entry.insert(tk.END, ' ')
             if should_capitalize_after_space():
                 capitalize_next[0] = True
+        elif char == '←':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
+        elif char == '→':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
+        elif char == '↑':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
+        elif char == '↓':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
         else:
-            if char.isalpha() and capitalize_next[0]:
+            if char.lower() == 'i':
+                text_entry.insert(tk.END, 'I')
+                capitalize_next[0] = False
+            elif char.isalpha() and capitalize_next[0]:
                 text_entry.insert(tk.END, char.upper())
                 capitalize_next[0] = False
             elif char.isalpha():
                 text_entry.insert(tk.END, char.lower())
             else:
                 text_entry.insert(tk.END, char)
-                if char in '.!?':
-                    pass
-                elif char == ' ':
-                    if should_capitalize_after_space():
-                        capitalize_next[0] = True
     return on_click
 
 def update_highlight():
@@ -128,8 +134,19 @@ def on_space_key(event):
             text_entry.insert(tk.END, ' ')
             if should_capitalize_after_space():
                 capitalize_next[0] = True
+        elif char == '←':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
+        elif char == '→':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
+        elif char == '↑':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
+        elif char == '↓':
+            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
         else:
-            if char.isalpha() and capitalize_next[0]:
+            if char.lower() == 'i':
+                text_entry.insert(tk.END, 'I')
+                capitalize_next[0] = False
+            elif char.isalpha() and capitalize_next[0]:
                 text_entry.insert(tk.END, char.upper())
                 capitalize_next[0] = False
             elif char.isalpha():
@@ -166,8 +183,19 @@ def on_space_key(event):
                 text_entry.insert(tk.END, ' ')
                 if should_capitalize_after_space():
                     capitalize_next[0] = True
+            elif char == '←':
+                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
+            elif char == '→':
+                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
+            elif char == '↑':
+                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
+            elif char == '↓':
+                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
             else:
-                if char.isalpha() and capitalize_next[0]:
+                if char.lower() == 'i':
+                    text_entry.insert(tk.END, 'I')
+                    capitalize_next[0] = False
+                elif char.isalpha() and capitalize_next[0]:
                     text_entry.insert(tk.END, char.upper())
                     capitalize_next[0] = False
                 elif char.isalpha():
