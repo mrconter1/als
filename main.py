@@ -8,7 +8,7 @@ title_font = font.Font(family="Helvetica", size=16, weight="bold")
 title_label = tk.Label(root, text="English Alphabet", font=title_font)
 title_label.grid(row=0, column=0, columnspan=7, pady=15)
 
-alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ."
 letters_font = font.Font(family="Helvetica", size=24, weight="bold")
 
 for idx, letter in enumerate(alphabet):
