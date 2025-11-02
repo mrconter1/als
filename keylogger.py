@@ -11,6 +11,11 @@ SAVE_INTERVAL = 5  # seconds
 
 keystats = {}
 running = True
+modifiers = {
+    'shift': False,
+    'ctrl': False,
+    'alt': False
+}
 
 def load_stats():
     global keystats
@@ -33,24 +38,59 @@ def periodic_save():
             save_stats()
             print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Stats saved ({len(keystats)} unique keys)", end='\r')
 
+def is_control_character(char):
+    if not char:
+        return True
+    if len(char) == 1:
+        code = ord(char)
+        return code < 32 and code not in [9, 10, 13]  # Allow tab, newline, carriage return
+    return False
+
 def normalize_key(key):
     try:
         if hasattr(key, 'char'):
             char = key.char
-            if char is None:
+            if char is None or is_control_character(char):
                 return None
+            # If shift is held and it's a letter, just use lowercase
+            if modifiers['shift'] and char.isalpha():
+                return char.lower()
             return char
         elif hasattr(key, 'name'):
             name = key.name
             if name == 'space':
                 return ' '
+            # Special combinations
+            if name == 'backspace' and modifiers['shift']:
+                return 'delete_word'
+            if name == 'backspace':
+                return 'backspace'
+            if name == 'enter':
+                return 'enter'
+            # Ignore pure modifier keys
+            if name in ['shift', 'shift_l', 'shift_r', 'ctrl_l', 'ctrl_r', 'alt_l', 'alt_r', 'alt_gr', 'caps_lock']:
+                return None
             return name
         else:
-            return str(key)
+            return None
     except:
         return None
 
+def update_modifiers(key, is_press):
+    try:
+        if hasattr(key, 'name'):
+            name = key.name
+            if name in ['shift', 'shift_l', 'shift_r']:
+                modifiers['shift'] = is_press
+            elif name in ['ctrl_l', 'ctrl_r']:
+                modifiers['ctrl'] = is_press
+            elif name in ['alt_l', 'alt_r', 'alt_gr']:
+                modifiers['alt'] = is_press
+    except:
+        pass
+
 def on_press(key):
+    update_modifiers(key, True)
     try:
         normalized = normalize_key(key)
         if normalized:
@@ -61,6 +101,7 @@ def on_press(key):
 
 def on_release(key):
     global running
+    update_modifiers(key, False)
     try:
         if key == keyboard.Key.esc:
             running = False
