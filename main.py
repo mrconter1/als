@@ -93,7 +93,10 @@ def update_highlight():
     mid_idx = (start_idx + end_idx) // 2
     
     for i in range(len(key_labels)):
-        key_labels[i].config(bg="SystemButtonFace", fg="black")
+        if start_idx <= i < end_idx:
+            key_labels[i].config(bg="lightgray", fg="black")
+        else:
+            key_labels[i].config(bg="SystemButtonFace", fg="black")
     
     if start_idx == end_idx - 1:
         key_labels[start_idx].config(bg="blue", fg="white")
