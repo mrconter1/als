@@ -27,6 +27,14 @@ keyboard_frame.pack(pady=10)
 key_font = font.Font(family="Helvetica", size=12, weight="bold")
 key_labels = []
 flat_keys = []
+capitalize_next = [True]
+
+def should_capitalize_after_space():
+    current_text = text_entry.get(1.0, tk.END).rstrip('\n')
+    if len(current_text) > 0:
+        last_char = current_text[-1]
+        return last_char in '.!?'
+    return False
 
 def create_click_handler(char):
     def on_click():
@@ -34,14 +42,29 @@ def create_click_handler(char):
             current_text = text_entry.get(1.0, tk.END)
             text_entry.delete(1.0, tk.END)
             text_entry.insert(1.0, current_text[:-1])
+            capitalize_next[0] = False
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
+            capitalize_next[0] = True
         elif char == 'CAPS':
             pass
         elif char == 'SPACE':
             text_entry.insert(tk.END, ' ')
+            if should_capitalize_after_space():
+                capitalize_next[0] = True
         else:
-            text_entry.insert(tk.END, char)
+            if char.isalpha() and capitalize_next[0]:
+                text_entry.insert(tk.END, char.upper())
+                capitalize_next[0] = False
+            elif char.isalpha():
+                text_entry.insert(tk.END, char.lower())
+            else:
+                text_entry.insert(tk.END, char)
+                if char in '.!?':
+                    pass
+                elif char == ' ':
+                    if should_capitalize_after_space():
+                        capitalize_next[0] = True
     return on_click
 
 def update_highlight():
@@ -74,14 +97,24 @@ def on_space_key(event):
             current_text = text_entry.get(1.0, tk.END)
             text_entry.delete(1.0, tk.END)
             text_entry.insert(1.0, current_text[:-1])
+            capitalize_next[0] = False
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
+            capitalize_next[0] = True
         elif char == 'CAPS':
             pass
         elif char == 'SPACE':
             text_entry.insert(tk.END, ' ')
+            if should_capitalize_after_space():
+                capitalize_next[0] = True
         else:
-            text_entry.insert(tk.END, char)
+            if char.isalpha() and capitalize_next[0]:
+                text_entry.insert(tk.END, char.upper())
+                capitalize_next[0] = False
+            elif char.isalpha():
+                text_entry.insert(tk.END, char.lower())
+            else:
+                text_entry.insert(tk.END, char)
         current_range[0] = [0, len(key_labels)]
         toggle_state[0] = True
         root.after_cancel(highlight_timer[0])
@@ -104,14 +137,24 @@ def on_space_key(event):
                 current_text = text_entry.get(1.0, tk.END)
                 text_entry.delete(1.0, tk.END)
                 text_entry.insert(1.0, current_text[:-1])
+                capitalize_next[0] = False
             elif char == 'ENTER':
                 text_entry.insert(tk.END, '\n')
+                capitalize_next[0] = True
             elif char == 'CAPS':
                 pass
             elif char == 'SPACE':
                 text_entry.insert(tk.END, ' ')
+                if should_capitalize_after_space():
+                    capitalize_next[0] = True
             else:
-                text_entry.insert(tk.END, char)
+                if char.isalpha() and capitalize_next[0]:
+                    text_entry.insert(tk.END, char.upper())
+                    capitalize_next[0] = False
+                elif char.isalpha():
+                    text_entry.insert(tk.END, char.lower())
+                else:
+                    text_entry.insert(tk.END, char)
             current_range[0] = [0, len(key_labels)]
             toggle_state[0] = True
             update_highlight()
