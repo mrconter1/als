@@ -14,6 +14,40 @@ progress_canvas = tk.Canvas(root, height=8, bg="white", highlightthickness=0)
 progress_canvas.pack(fill=tk.X, padx=10, pady=5)
 progress_bar = progress_canvas.create_rectangle(0, 0, 0, 8, fill="blue", outline="blue")
 
+def calculate_split_depth(index, total_items):
+    """Calculate how many binary splits needed to reach position index"""
+    depth = 0
+    start, end = 0, total_items
+    while end - start > 1:
+        mid = (start + end) // 2
+        if index < mid:
+            end = mid
+        else:
+            start = mid
+        depth += 1
+    return depth
+
+def optimize_keyboard_layout():
+    """Reorganize keyboard with frequency optimization and clean visual layout"""
+    
+    # Organize keys by frequency tiers for visual organization
+    tier1 = [('E', 1), ('T', 1), ('A', 1), ('O', 1), ('I', 1), ('N', 1), ('S', 1), ('H', 1), ('R', 1), ('.', 1)]
+    tier2 = [('D', 1), ('L', 1), ('C', 1), ('U', 1), ('M', 1), ('W', 1), ('F', 1), ('G', 1), ('Y', 1), ('P', 1)]
+    tier3 = [('B', 1), ('V', 1), ('K', 1), (',', 1), ('-', 1), ("'", 1), ('?', 1), ('J', 1), ('X', 1), ('!', 1)]
+    tier4 = [(':', 1), ('=', 1), ('>', 1), ('(', 1), (')', 1), ('/', 1)]
+    
+    layout = [
+        tier1,
+        tier2,
+        tier3,
+        tier4,
+        [('BACK', 1.5), ('ENTER', 1.5), ('CLR', 2)],
+        [('SPACE', 7)],
+        [('←', 1), ('↑', 1), ('↓', 1), ('→', 1)]
+    ]
+    
+    return layout
+
 def update_progress_bar():
     if highlight_timer[0] is not None:
         elapsed = (time.time() - timer_start[0]) * 1000
@@ -27,15 +61,7 @@ def update_progress_bar():
 import time
 timer_start = [time.time()]
 
-keyboard_layout = [
-    [('E', 1), ('T', 1), ('O', 1), ('A', 1), ('N', 1), ('I', 1), ('R', 1), ('S', 1), ('H', 1), ('BACK', 1.5)],
-    [('C', 1), ('L', 1), ('D', 1), ('ENTER', 1.5), ('.', 1), ('W', 1), ('U', 1), ('B', 1), ('K', 1), ('P', 1)],
-    [('Y', 1), ('F', 1), ('G', 1), ('M', 1), ('?', 1), ('-', 1), ('X', 1), ('"', 1), ('V', 1), (',', 1)],
-    [("'", 1), (')', 1), (':', 1), ('J', 1), ('Z', 1), ('=', 1), ('>', 1), ('(', 1), ('!', 1), ('/', 1)],
-    [('å', 1)],
-    [('SPACE', 7)],
-    [('←', 1), ('↑', 1), ('↓', 1), ('→', 1), ('CLR', 2)]
-]
+keyboard_layout = optimize_keyboard_layout()
 
 keyboard_frame = tk.Frame(root)
 keyboard_frame.pack(pady=10)
