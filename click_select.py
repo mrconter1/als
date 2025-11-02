@@ -53,7 +53,7 @@ root.wm_attributes('-transparentcolor', 'white')
 root.overrideredirect(True)
 
 SPLIT_INTERVAL = 1000  # milliseconds
-MIN_BOX_SIZE = 20
+MIN_BOX_SIZE = 50
 
 canvas = tk.Canvas(root, bg='white', highlightthickness=0, cursor='crosshair')
 canvas.pack(fill=tk.BOTH, expand=True)
@@ -119,8 +119,16 @@ def reset_region():
 
 root.focus_force()
 
-keyboard.add_hotkey('space', handle_space)
-keyboard.add_hotkey('esc', handle_escape)
+def on_space_pressed(event):
+    handle_space()
+    return True
+
+def on_escape_pressed(event):
+    handle_escape()
+    return True
+
+keyboard.on_press_key('space', on_space_pressed, suppress=True)
+keyboard.on_press_key('esc', on_escape_pressed, suppress=True)
 
 draw_regions()
 root.mainloop()
