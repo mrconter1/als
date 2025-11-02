@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import font
 import pyttsx3
+import threading
 
 root = tk.Tk()
 root.title("Keyboard")
@@ -79,14 +80,16 @@ def should_capitalize_after_space():
         return last_char in '.!?'
     return False
 
-engine = pyttsx3.init()
-engine.setProperty('rate', 150)
-
 def speak_text():
     text_content = text_entry.get(1.0, tk.END).rstrip('\n')
     if text_content:
-        engine.say(text_content)
-        engine.runAndWait()
+        def speak_in_thread():
+            local_engine = pyttsx3.init()
+            local_engine.setProperty('rate', 150)
+            local_engine.say(text_content)
+            local_engine.runAndWait()
+        thread = threading.Thread(target=speak_in_thread, daemon=True)
+        thread.start()
 
 def handle_backspace():
     cursor_pos = text_entry.index(tk.INSERT)
