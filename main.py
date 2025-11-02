@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import font
 import pyttsx3
 import threading
+import time
 
 root = tk.Tk()
 root.title("Keyboard")
@@ -15,19 +16,6 @@ title_label.pack(pady=15)
 progress_canvas = tk.Canvas(root, height=8, bg="white", highlightthickness=0)
 progress_canvas.pack(fill=tk.X, padx=10, pady=5)
 progress_bar = progress_canvas.create_rectangle(0, 0, 0, 8, fill="blue", outline="blue")
-
-def calculate_split_depth(index, total_items):
-    """Calculate how many binary splits needed to reach position index"""
-    depth = 0
-    start, end = 0, total_items
-    while end - start > 1:
-        mid = (start + end) // 2
-        if index < mid:
-            end = mid
-        else:
-            start = mid
-        depth += 1
-    return depth
 
 def optimize_keyboard_layout():
     """Reorganize keyboard with frequency optimization and clean visual layout"""
@@ -59,8 +47,6 @@ def update_progress_bar():
             fill_width = canvas_width * progress
             progress_canvas.coords(progress_bar, 0, 0, fill_width, 8)
     root.after(10, update_progress_bar)
-
-import time
 
 keyboard_layout = optimize_keyboard_layout()
 
