@@ -153,17 +153,27 @@ def update_highlight():
         state['highlight_timer'] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
         state['timer_start'] = time.time()
 
+def create_arrow_handler(movement):
+    def on_arrow(event):
+        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + movement))
+        return "break"
+    return on_arrow
+
+def reset_selection_state():
+    """Reset selection range to full keyboard and update highlight"""
+    state['current_range'] = [0, len(key_labels)]
+    state['toggle_state'] = True
+    update_highlight()
+    state['timer_start'] = time.time()
+
 def on_space_key(event):
     start_idx, end_idx = state['current_range']
     
     if start_idx == end_idx - 1:
         char = flat_keys[start_idx]
         handle_character_action(char)
-        state['current_range'] = [0, len(key_labels)]
-        state['toggle_state'] = True
         root.after_cancel(state['highlight_timer'])
-        update_highlight()
-        state['timer_start'] = time.time()
+        reset_selection_state()
     else:
         mid_idx = (start_idx + end_idx) // 2
         if state['toggle_state']:
@@ -179,10 +189,7 @@ def on_space_key(event):
         if new_start == new_end - 1:
             char = flat_keys[new_start]
             handle_character_action(char)
-            state['current_range'] = [0, len(key_labels)]
-            state['toggle_state'] = True
-            update_highlight()
-            state['timer_start'] = time.time()
+            reset_selection_state()
         else:
             update_highlight()
             state['timer_start'] = time.time()
@@ -226,12 +233,6 @@ def toggle_cursor_blink():
         text_entry.config(insertwidth=0)
     state['cursor_visible'] = not state['cursor_visible']
     state['cursor_blink_timer'] = root.after(500, toggle_cursor_blink)
-
-def create_arrow_handler(movement):
-    def on_arrow(event):
-        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + movement))
-        return "break"
-    return on_arrow
 
 text_entry.bind("<Left>", create_arrow_handler("-1c"))
 text_entry.bind("<Right>", create_arrow_handler("+1c"))
