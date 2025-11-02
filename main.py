@@ -98,46 +98,50 @@ def handle_backspace():
         text_entry.delete(prev_pos, cursor_pos)
     capitalize_next[0] = False
 
+def handle_character_action(char):
+    """Handle insertion or action for any character or special key"""
+    if char == 'BACK':
+        handle_backspace()
+    elif char == 'SAY':
+        speak_text()
+    elif char == 'ENTER':
+        text_entry.insert(tk.END, '\n')
+        capitalize_next[0] = True
+    elif char == 'CAPS':
+        pass
+    elif char == 'SPACE':
+        text_entry.insert(tk.END, ' ')
+        if should_capitalize_after_space():
+            capitalize_next[0] = True
+    elif char == '←':
+        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
+    elif char == '→':
+        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
+    elif char == '↑':
+        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
+    elif char == '↓':
+        text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
+    elif char == 'CLR':
+        text_entry.delete(1.0, tk.END)
+    else:
+        if char.lower() == 'i':
+            current_text = text_entry.get(1.0, tk.END).rstrip('\n')
+            if len(current_text) == 0 or current_text[-1] == ' ':
+                text_entry.insert(tk.END, 'I')
+            else:
+                text_entry.insert(tk.END, 'i')
+            capitalize_next[0] = False
+        elif char.isalpha() and capitalize_next[0]:
+            text_entry.insert(tk.END, char.upper())
+            capitalize_next[0] = False
+        elif char.isalpha():
+            text_entry.insert(tk.END, char.lower())
+        else:
+            text_entry.insert(tk.END, char)
+
 def create_click_handler(char):
     def on_click():
-        if char == 'BACK':
-            handle_backspace()
-        elif char == 'SAY':
-            speak_text()
-        elif char == 'ENTER':
-            text_entry.insert(tk.END, '\n')
-            capitalize_next[0] = True
-        elif char == 'CAPS':
-            pass
-        elif char == 'SPACE':
-            text_entry.insert(tk.END, ' ')
-            if should_capitalize_after_space():
-                capitalize_next[0] = True
-        elif char == '←':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
-        elif char == '→':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
-        elif char == '↑':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
-        elif char == '↓':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
-        elif char == 'CLR':
-            text_entry.delete(1.0, tk.END)
-        else:
-            if char.lower() == 'i':
-                current_text = text_entry.get(1.0, tk.END).rstrip('\n')
-                if len(current_text) == 0 or current_text[-1] == ' ':
-                    text_entry.insert(tk.END, 'I')
-                else:
-                    text_entry.insert(tk.END, 'i')
-                capitalize_next[0] = False
-            elif char.isalpha() and capitalize_next[0]:
-                text_entry.insert(tk.END, char.upper())
-                capitalize_next[0] = False
-            elif char.isalpha():
-                text_entry.insert(tk.END, char.lower())
-            else:
-                text_entry.insert(tk.END, char)
+        handle_character_action(char)
     return on_click
 
 def update_highlight():
@@ -170,44 +174,7 @@ def on_space_key(event):
     
     if start_idx == end_idx - 1:
         char = flat_keys[start_idx]
-        if char == 'BACK':
-            handle_backspace()
-        elif char == 'SAY':
-            speak_text()
-        elif char == 'ENTER':
-            text_entry.insert(tk.END, '\n')
-            capitalize_next[0] = True
-        elif char == 'CAPS':
-            pass
-        elif char == 'SPACE':
-            text_entry.insert(tk.END, ' ')
-            if should_capitalize_after_space():
-                capitalize_next[0] = True
-        elif char == '←':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
-        elif char == '→':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
-        elif char == '↑':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
-        elif char == '↓':
-            text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
-        elif char == 'CLR':
-            text_entry.delete(1.0, tk.END)
-        else:
-            if char.lower() == 'i':
-                current_text = text_entry.get(1.0, tk.END).rstrip('\n')
-                if len(current_text) == 0 or current_text[-1] == ' ':
-                    text_entry.insert(tk.END, 'I')
-                else:
-                    text_entry.insert(tk.END, 'i')
-                capitalize_next[0] = False
-            elif char.isalpha() and capitalize_next[0]:
-                text_entry.insert(tk.END, char.upper())
-                capitalize_next[0] = False
-            elif char.isalpha():
-                text_entry.insert(tk.END, char.lower())
-            else:
-                text_entry.insert(tk.END, char)
+        handle_character_action(char)
         current_range[0] = [0, len(key_labels)]
         toggle_state[0] = True
         root.after_cancel(highlight_timer[0])
@@ -227,44 +194,7 @@ def on_space_key(event):
         new_start, new_end = current_range[0]
         if new_start == new_end - 1:
             char = flat_keys[new_start]
-            if char == 'BACK':
-                handle_backspace()
-            elif char == 'SAY':
-                speak_text()
-            elif char == 'ENTER':
-                text_entry.insert(tk.END, '\n')
-                capitalize_next[0] = True
-            elif char == 'CAPS':
-                pass
-            elif char == 'SPACE':
-                text_entry.insert(tk.END, ' ')
-                if should_capitalize_after_space():
-                    capitalize_next[0] = True
-            elif char == '←':
-                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1c"))
-            elif char == '→':
-                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1c"))
-            elif char == '↑':
-                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "-1l linestart"))
-            elif char == '↓':
-                text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
-            elif char == 'CLR':
-                text_entry.delete(1.0, tk.END)
-            else:
-                if char.lower() == 'i':
-                    current_text = text_entry.get(1.0, tk.END).rstrip('\n')
-                    if len(current_text) == 0 or current_text[-1] == ' ':
-                        text_entry.insert(tk.END, 'I')
-                    else:
-                        text_entry.insert(tk.END, 'i')
-                    capitalize_next[0] = False
-                elif char.isalpha() and capitalize_next[0]:
-                    text_entry.insert(tk.END, char.upper())
-                    capitalize_next[0] = False
-                elif char.isalpha():
-                    text_entry.insert(tk.END, char.lower())
-                else:
-                    text_entry.insert(tk.END, char)
+            handle_character_action(char)
             current_range[0] = [0, len(key_labels)]
             toggle_state[0] = True
             update_highlight()
