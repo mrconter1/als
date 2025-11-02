@@ -82,7 +82,11 @@ def create_click_handler(char):
             text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
         else:
             if char.lower() == 'i':
-                text_entry.insert(tk.END, 'I')
+                current_text = text_entry.get(1.0, tk.END).rstrip('\n')
+                if len(current_text) == 0 or current_text[-1] == ' ':
+                    text_entry.insert(tk.END, 'I')
+                else:
+                    text_entry.insert(tk.END, 'i')
                 capitalize_next[0] = False
             elif char.isalpha() and capitalize_next[0]:
                 text_entry.insert(tk.END, char.upper())
@@ -144,7 +148,11 @@ def on_space_key(event):
             text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
         else:
             if char.lower() == 'i':
-                text_entry.insert(tk.END, 'I')
+                current_text = text_entry.get(1.0, tk.END).rstrip('\n')
+                if len(current_text) == 0 or current_text[-1] == ' ':
+                    text_entry.insert(tk.END, 'I')
+                else:
+                    text_entry.insert(tk.END, 'i')
                 capitalize_next[0] = False
             elif char.isalpha() and capitalize_next[0]:
                 text_entry.insert(tk.END, char.upper())
@@ -193,7 +201,11 @@ def on_space_key(event):
                 text_entry.mark_set(tk.INSERT, text_entry.index(tk.INSERT + "+1l linestart"))
             else:
                 if char.lower() == 'i':
-                    text_entry.insert(tk.END, 'I')
+                    current_text = text_entry.get(1.0, tk.END).rstrip('\n')
+                    if len(current_text) == 0 or current_text[-1] == ' ':
+                        text_entry.insert(tk.END, 'I')
+                    else:
+                        text_entry.insert(tk.END, 'i')
                     capitalize_next[0] = False
                 elif char.isalpha() and capitalize_next[0]:
                     text_entry.insert(tk.END, char.upper())
