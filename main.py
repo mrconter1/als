@@ -31,9 +31,9 @@ flat_keys = []
 def create_click_handler(char):
     def on_click():
         if char == 'BACK':
-            current_text = text_entry.get()
-            text_entry.delete(0, tk.END)
-            text_entry.insert(0, current_text[:-1])
+            current_text = text_entry.get(1.0, tk.END)
+            text_entry.delete(1.0, tk.END)
+            text_entry.insert(1.0, current_text[:-1])
         elif char == 'ENTER':
             text_entry.insert(tk.END, '\n')
         elif char == 'CAPS':
@@ -45,32 +45,78 @@ def create_click_handler(char):
     return on_click
 
 def update_highlight():
-    old_idx = current_highlight_idx[0]
-    key_labels[old_idx].config(bg="SystemButtonFace", fg="black")
+    show_first_half = toggle_state[0]
+    start_idx, end_idx = current_range[0]
+    mid_idx = (start_idx + end_idx) // 2
     
-    current_highlight_idx[0] = (current_highlight_idx[0] + 1) % len(key_labels)
-    new_idx = current_highlight_idx[0]
-    key_labels[new_idx].config(bg="blue", fg="white")
+    for i in range(len(key_labels)):
+        key_labels[i].config(bg="SystemButtonFace", fg="black")
     
-    highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
+    if start_idx == end_idx - 1:
+        key_labels[start_idx].config(bg="blue", fg="white")
+    else:
+        if show_first_half:
+            for i in range(start_idx, mid_idx):
+                key_labels[i].config(bg="blue", fg="white")
+        else:
+            for i in range(mid_idx, end_idx):
+                key_labels[i].config(bg="blue", fg="white")
+        
+        toggle_state[0] = not toggle_state[0]
+        highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
 
 def on_space_key(event):
-    char = flat_keys[current_highlight_idx[0]]
-    if char == 'BACK':
-        current_text = text_entry.get()
-        text_entry.delete(0, tk.END)
-        text_entry.insert(0, current_text[:-1])
-    elif char == 'ENTER':
-        text_entry.insert(tk.END, '\n')
-    elif char == 'CAPS':
-        pass
-    elif char == 'SPACE':
-        text_entry.insert(tk.END, ' ')
+    start_idx, end_idx = current_range[0]
+    
+    if start_idx == end_idx - 1:
+        char = flat_keys[start_idx]
+        if char == 'BACK':
+            current_text = text_entry.get(1.0, tk.END)
+            text_entry.delete(1.0, tk.END)
+            text_entry.insert(1.0, current_text[:-1])
+        elif char == 'ENTER':
+            text_entry.insert(tk.END, '\n')
+        elif char == 'CAPS':
+            pass
+        elif char == 'SPACE':
+            text_entry.insert(tk.END, ' ')
+        else:
+            text_entry.insert(tk.END, char)
+        current_range[0] = [0, len(key_labels)]
+        toggle_state[0] = True
+        root.after_cancel(highlight_timer[0])
+        update_highlight()
     else:
-        text_entry.insert(tk.END, char)
-
-current_highlight_idx = [0]
-highlight_timer = [None]
+        mid_idx = (start_idx + end_idx) // 2
+        if toggle_state[0]:
+            current_range[0] = [mid_idx, end_idx]
+        else:
+            current_range[0] = [start_idx, mid_idx]
+        toggle_state[0] = True
+        root.after_cancel(highlight_timer[0])
+        for i in range(len(key_labels)):
+            key_labels[i].config(bg="SystemButtonFace", fg="black")
+        
+        new_start, new_end = current_range[0]
+        if new_start == new_end - 1:
+            char = flat_keys[new_start]
+            if char == 'BACK':
+                current_text = text_entry.get(1.0, tk.END)
+                text_entry.delete(1.0, tk.END)
+                text_entry.insert(1.0, current_text[:-1])
+            elif char == 'ENTER':
+                text_entry.insert(tk.END, '\n')
+            elif char == 'CAPS':
+                pass
+            elif char == 'SPACE':
+                text_entry.insert(tk.END, ' ')
+            else:
+                text_entry.insert(tk.END, char)
+            current_range[0] = [0, len(key_labels)]
+            toggle_state[0] = True
+            update_highlight()
+        else:
+            update_highlight()
 
 for row_idx, row in enumerate(keyboard_layout):
     row_frame = tk.Frame(keyboard_frame)
@@ -89,7 +135,8 @@ for row_idx, row in enumerate(keyboard_layout):
         key_labels.append(key_label)
         flat_keys.append(key)
 
-key_labels[0].config(bg="blue", fg="white")
+current_range = [[0, len(key_labels)]]
+toggle_state = [True]
 
 text_entry = tk.Text(root, font=font.Font(family="Helvetica", size=12), width=50, height=5)
 text_entry.pack(pady=15, padx=5)
@@ -99,6 +146,7 @@ root.bind("<space>", on_space_key)
 root.update_idletasks()
 root.geometry(f"{root.winfo_reqwidth()}x{root.winfo_reqheight()}")
 
+highlight_timer = [None]
 highlight_timer[0] = root.after(HIGHLIGHT_INTERVAL, update_highlight)
 
 root.mainloop()
